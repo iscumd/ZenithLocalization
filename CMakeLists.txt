@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   message_generation
   message_runtime
+  nav_msgs
   roscpp
 )
 
@@ -68,7 +69,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   geometry_msgs
+#   geometry_msgs#   nav_msgs
 # )
 
 ################################################
@@ -103,7 +104,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES zenith_localization
-#  CATKIN_DEPENDS geometry_msgs message_generation message_runtime roscpp
+#  CATKIN_DEPENDS geometry_msgs message_generation message_runtime nav_msgs roscpp
 #  DEPENDS system_lib
 )
 
@@ -129,16 +130,16 @@ include_directories(
 # add_dependencies(zenith_localization ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-# add_executable(zenith_localization_node src/zenith_localization_node.cpp)
+add_executable(zenith_localizer src/zenith_localizer.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(zenith_localization_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(zenith_localizer ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(zenith_localization_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(zenith_localizer
+  ${catkin_LIBRARIES}
+)
 
 #############
 ## Install ##
