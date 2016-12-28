@@ -15,6 +15,6 @@ This takes in a custom msg type defined by (to be defined) and sets the robot po
 
 ### Outputs
 
-#### /zenith/pose
+#### /zenith/pose2D
 Outpust a message of type geometry_msgs/Pose2D.msg (Still to be implemented)
 
