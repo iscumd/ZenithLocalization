@@ -1,6 +1,7 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Pose2D.h"
 #include "nav_msgs/Odometry.h"
+#include "zenith_localization/AprilTagDetectionArray.h"
 
 ros::Publisher roboPose;
 
@@ -29,21 +30,40 @@ void toEulerianAngle(const geometry_msgs::Quaternion& q, double& roll, double& p
 	yaw = std::atan2(t3, t4);
 }
 
+void aprilTagCallBack(const zenith_localization::AprilTagDetectionArray::ConstPtr& aprilTagArray){
+	double roll, pitch, yaw;
+
+	ROS_INFO("April Tag List");
+
+	ROS_INFO("%d Tags Detected", aprilTagArray->detections.size());
+
+	for(int i = 0; i < aprilTagArray->detections.size(); i++){
+
+		ROS_INFO("Tag %d Detected", aprilTagArray->detections[i].id );
+		toEulerianAngle(aprilTagArray->detections[i].pose.pose.orientation, roll, pitch, yaw);
+		ROS_INFO("Roll: %f, Pitch: %f, Yaw: %f", roll, pitch, yaw);
+
+	}
+
+
+
+}
+
 void odomCallback(const nav_msgs::Odometry::ConstPtr& odom){
-ROS_INFO("odomCallback");
-double roll, pitch;
-double yaw = -1;
-
-pose2D_msg.x = odom->pose.pose.position.x;
-pose2D_msg.y = odom->pose.pose.position.y;
-
-toEulerianAngle(odom->pose.pose.orientation, roll, pitch, yaw);
-
-ROS_INFO("Roll: %f, Pitch: %f, Yaw: %f", roll, pitch, yaw);
-
-pose2D_msg.theta = yaw;
-
-roboPose.publish(pose2D_msg);
+	ROS_INFO("odomCallback");
+	double roll, pitch;
+	double yaw = -1;
+	
+	pose2D_msg.x = odom->pose.pose.position.x;
+	pose2D_msg.y = odom->pose.pose.position.y;
+	
+	toEulerianAngle(odom->pose.pose.orientation, roll, pitch, yaw);
+	
+	ROS_INFO("Roll: %f, Pitch: %f, Yaw: %f", roll, pitch, yaw);
+	
+	pose2D_msg.theta = yaw;
+	
+	roboPose.publish(pose2D_msg);
 
 }
 
