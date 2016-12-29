@@ -78,7 +78,8 @@ ros::NodeHandle n;
 
 roboPose = n.advertise<geometry_msgs::Pose2D>("/zenith/pose2D", 5);
 
-ros::Subscriber sub = n.subscribe("/zed/odom", 5, odomCallback);
+ros::Subscriber sub1 = n.subscribe("/zed/odom", 5, odomCallback);
+ros::Subscriber sub2 = n.subscribe("/zenith/tag_detections", 5, aprilTagCallBack);
 
 ros::spin();
 
