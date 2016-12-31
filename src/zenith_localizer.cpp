@@ -1,16 +1,81 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Pose2D.h"
 #include "nav_msgs/Odometry.h"
-#include "zenith_localization/AprilTagDetectionArray.h"
+#include "apriltags_ros/AprilTagDetectionArray.h"
+#include "apriltags_ros/AprilTagDetection.h"
+#include <XmlRpcException.h>
 
 ros::Publisher roboPose;
 
 geometry_msgs::Pose2D pose2D_msg;
 
+std::map<int, apriltags_ros::AprilTagDetection> TagGlobalPose;
+
+//Parsing ROS Params
+std::map<int, apriltags_ros::AprilTagDetection> parse_tag_descriptions(XmlRpc::XmlRpcValue& tag_descriptions){
+
+
+  std::map<int, apriltags_ros::AprilTagDetection> descriptions;
+
+  ROS_ASSERT(tag_descriptions.getType() == XmlRpc::XmlRpcValue::TypeArray);
+
+  for (int32_t i = 0; i < tag_descriptions.size(); ++i) {
+
+    XmlRpc::XmlRpcValue& tag_description = tag_descriptions[i];
+
+    ROS_ASSERT(tag_description.getType() == XmlRpc::XmlRpcValue::TypeStruct);
+
+    ROS_ASSERT(tag_description["id"].getType() == XmlRpc::XmlRpcValue::TypeInt);
+
+    ROS_ASSERT(tag_description["size"].getType() == XmlRpc::XmlRpcValue::TypeDouble);
+
+
+
+    int id = (int)tag_description["id"];
+
+    double size = (double)tag_description["size"];
+
+
+
+    std::string frame_name;
+
+    if(tag_description.hasMember("frame_id")){
+
+      ROS_ASSERT(tag_description["frame_id"].getType() == XmlRpc::XmlRpcValue::TypeString);
+
+      frame_name = (std::string)tag_description["frame_id"];
+
+    }
+
+    else{
+
+      std::stringstream frame_name_stream;
+
+      frame_name_stream << "tag_" << id;
+
+      frame_name = frame_name_stream.str();
+
+    }
+
+    //AprilTagDescription description(id, size, frame_name);
+
+    apriltags_ros::AprilTagDetection description;
+
+    ROS_INFO_STREAM("Loaded tag config: "<<id<<", size: "<<size<<", frame_name: "<<frame_name);
+
+    descriptions.insert(std::make_pair(id, description));
+
+  }
+
+  return descriptions;
+
+}
+
+
 //Soruce https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
 void toEulerianAngle(const geometry_msgs::Quaternion& q, double& roll, double& pitch, double& yaw)
 {
-	ROS_INFO("Euler Convesion");
+//	ROS_INFO("Euler Convesion");
 	double ysqr = q.y * q.y;
 
 	// roll (x-axis rotation)
@@ -30,10 +95,10 @@ void toEulerianAngle(const geometry_msgs::Quaternion& q, double& roll, double& p
 	yaw = std::atan2(t3, t4);
 }
 
-void aprilTagCallBack(const zenith_localization::AprilTagDetectionArray::ConstPtr& aprilTagArray){
+void aprilTagCallBack(const apriltags_ros::AprilTagDetectionArray::ConstPtr& aprilTagArray){
 	double roll, pitch, yaw;
 
-	ROS_INFO("April Tag List");
+//	ROS_INFO("April Tag List");
 
 	ROS_INFO("%d Tags Detected", aprilTagArray->detections.size());
 
@@ -50,7 +115,7 @@ void aprilTagCallBack(const zenith_localization::AprilTagDetectionArray::ConstPt
 }
 
 void odomCallback(const nav_msgs::Odometry::ConstPtr& odom){
-	ROS_INFO("odomCallback");
+//	ROS_INFO("odomCallback");
 	double roll, pitch;
 	double yaw = -1;
 	
@@ -59,7 +124,7 @@ void odomCallback(const nav_msgs::Odometry::ConstPtr& odom){
 	
 	toEulerianAngle(odom->pose.pose.orientation, roll, pitch, yaw);
 	
-	ROS_INFO("Roll: %f, Pitch: %f, Yaw: %f", roll, pitch, yaw);
+//	ROS_INFO("Roll: %f, Pitch: %f, Yaw: %f", roll, pitch, yaw);
 	
 	pose2D_msg.theta = yaw;
 	
@@ -68,21 +133,34 @@ void odomCallback(const nav_msgs::Odometry::ConstPtr& odom){
 }
 
 int main(int argc, char **argv){
-
-
-ros::init(argc, argv, "zenith_localizer");
-
-ROS_INFO("Hello World");
-
-ros::NodeHandle n;
-
-roboPose = n.advertise<geometry_msgs::Pose2D>("/zenith/pose2D", 5);
-
-ros::Subscriber sub1 = n.subscribe("/zed/odom", 5, odomCallback);
-ros::Subscriber sub2 = n.subscribe("/zenith/tag_detections", 5, aprilTagCallBack);
-
-ros::spin();
-
-return 0;
-
+	
+	
+	ros::init(argc, argv, "zenith_localizer");
+	
+	ROS_INFO("Hello World");
+	
+	ros::NodeHandle n;
+	//Retirve ROS Params
+	  XmlRpc::XmlRpcValue april_tag_descriptions;
+	  if(!n.getParam("/apriltag_detector/tag_descriptions", april_tag_descriptions)){
+	    ROS_WARN("No april tags specified");
+	  }
+	  else{
+	    try{
+	      TagGlobalPose = parse_tag_descriptions(april_tag_descriptions);
+	    } catch(XmlRpc::XmlRpcException e){
+	      ROS_ERROR_STREAM("Error loading tag descriptions: "<<e.getMessage());
+	    }
+	  }
+	
+	
+	roboPose = n.advertise<geometry_msgs::Pose2D>("/zenith/pose2D", 5);
+	
+	ros::Subscriber sub1 = n.subscribe("/zed/odom", 5, odomCallback);
+	ros::Subscriber sub2 = n.subscribe("/zenith/tag_detections", 5, aprilTagCallBack);
+	
+	ros::spin();
+	
+	return 0;
+	
 }
