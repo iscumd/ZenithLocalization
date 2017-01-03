@@ -29,13 +29,37 @@ std::map<int, apriltags_ros::AprilTagDetection> parse_tag_descriptions(XmlRpc::X
 
     ROS_ASSERT(tag_description["size"].getType() == XmlRpc::XmlRpcValue::TypeDouble);
 
+    ROS_ASSERT(tag_description["x"].getType() == XmlRpc::XmlRpcValue::TypeDouble);
 
+    ROS_ASSERT(tag_description["y"].getType() == XmlRpc::XmlRpcValue::TypeDouble);
+
+    ROS_ASSERT(tag_description["z"].getType() == XmlRpc::XmlRpcValue::TypeDouble);
+
+    ROS_ASSERT(tag_description["qx"].getType() == XmlRpc::XmlRpcValue::TypeDouble);
+
+    ROS_ASSERT(tag_description["qy"].getType() == XmlRpc::XmlRpcValue::TypeDouble);
+
+    ROS_ASSERT(tag_description["qz"].getType() == XmlRpc::XmlRpcValue::TypeDouble);
+
+    ROS_ASSERT(tag_description["qw"].getType() == XmlRpc::XmlRpcValue::TypeDouble);
 
     int id = (int)tag_description["id"];
 
     double size = (double)tag_description["size"];
 
+    double x = (double)tag_description["x"];
 
+    double y = (double)tag_description["y"];
+
+    double z = (double)tag_description["z"];
+
+    double qx = (double)tag_description["qx"];
+
+    double qy = (double)tag_description["qy"];
+
+    double qz = (double)tag_description["qz"];
+
+    double qw = (double)tag_description["qw"];
 
     std::string frame_name;
 
@@ -62,7 +86,17 @@ std::map<int, apriltags_ros::AprilTagDetection> parse_tag_descriptions(XmlRpc::X
     apriltags_ros::AprilTagDetection description;
 
     ROS_INFO_STREAM("Loaded tag config: "<<id<<", size: "<<size<<", frame_name: "<<frame_name);
+    description.id = id;
+    description.size = size;
+    description.pose.pose.position.x = x;
+    description.pose.pose.position.y = y;
+    description.pose.pose.position.z = z;
+    description.pose.pose.orientation.x = qx;
+    description.pose.pose.orientation.y = qy;
+    description.pose.pose.orientation.z = qz;
+    description.pose.pose.orientation.w = qw;
 
+    
     descriptions.insert(std::make_pair(id, description));
 
   }
@@ -138,6 +172,7 @@ int main(int argc, char **argv){
 	ros::init(argc, argv, "zenith_localizer");
 	
 	ROS_INFO("Hello World");
+	ROS_INFO_STREAM("Hello World 2");
 	
 	ros::NodeHandle n;
 	//Retirve ROS Params
@@ -153,6 +188,13 @@ int main(int argc, char **argv){
 	    }
 	  }
 	
+
+	for (std::map<int, apriltags_ros::AprilTagDetection>::iterator it=TagGlobalPose.begin(); it!=TagGlobalPose.end(); ++it)
+	{    
+		ROS_INFO_STREAM("New It" << std::endl << it->second);	
+		//ROS_INFO("ID: %d, Size: %f", it->second.id, it->second.size);
+	}
+
 	
 	roboPose = n.advertise<geometry_msgs::Pose2D>("/zenith/pose2D", 5);
 	

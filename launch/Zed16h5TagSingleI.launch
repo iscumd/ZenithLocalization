@@ -17,13 +17,10 @@
 
     <!-- Describe the tags -->
     <rosparam param="tag_descriptions">[
-      {id: 0, size: 0.163513},
-      {id: 1, size: 0.163513, frame_id: a_frame},
-      {id: 2, size: 0.163513, frame_id: tag_2},
-      {id: 3, size: 0.163513},
-      {id: 4, size: 0.163513},
-      {id: 5, size: 0.163513},
-      {id: 6, size: 0.163513}]
+      {id: 0, size: 0.163513, x: 0.5,  y: -2.5, z: -0.75, qx: 0.9238795325112867,  qy: 0.0, qz: -0.3826834323650897, qw: 0.0},
+      {id: 1, size: 0.163513, x: 14.5, y: -2.5, z: -0.75, qx: 0.38268343236508983, qy: 0.0, qz: -0.9238795325112866, qw: 0.0},
+      {id: 2, size: 0.163513, x: 14.5, y: 2.5,  z: -0.75, qx: 0.38268343236508983, qy: 0.0, qz: 0.9238795325112866,  qw: 0.0},
+      {id: 3, size: 0.163513, x: 0.5,  y: 2.5,  z: -0.75, qx: 0.9238795325112867,  qy: 0.0, qz: 0.3826834323650897,  qw: 0.0}]
     </rosparam>
   </node>
   <node name="zenith_localizer" pkg="zenith_localization" type="zenith_localizer"/>
